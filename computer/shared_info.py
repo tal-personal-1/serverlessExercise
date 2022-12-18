@@ -16,6 +16,8 @@ class SharedInfo:
         with self._lock:
             if pid in self._pids_to_fronts:
                 self._ready_pids.append(pid)
+            if pid in self._used_pids:
+                self._used_pids.remove(pid)
 
     # removes a front pid from the ready list and returns the front itself
     def get_ready_front(self):
@@ -34,9 +36,8 @@ class SharedInfo:
         with self._lock:
             if pid in self._used_pids:
                 return True
-
-            elif pid in self._ready_pids:
-                self._used_pids.remove(pid)
+            if pid in self._ready_pids:
+                self._ready_pids.remove(pid)
             self._pids_to_fronts.pop(pid)
             return False
 
