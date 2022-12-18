@@ -32,13 +32,13 @@ class SharedInfo:
     # remove a front from the shared info, return True if trying to remove a front pid that is used
     def remove_alive(self, pid):
         with self._lock:
-            self._pids_to_fronts.pop(pid)
-            if pid in self._ready_pids:
-                self._ready_pids.remove(pid)
-                self._used_pids.remove(pid)
-                return False
-            elif pid in self._used_pids:
+            if pid in self._used_pids:
                 return True
+
+            elif pid in self._ready_pids:
+                self._used_pids.remove(pid)
+            self._pids_to_fronts.pop(pid)
+            return False
 
     # a property that returns as a list all the alive processes pids
     @property
