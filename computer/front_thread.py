@@ -73,7 +73,8 @@ class ProcessTimer(threading.Timer):
 # it kills the FunctionProcess, so it returns an End from the process queue, sets the front finished to True,
 # and removes the front from the live processes list.
 def process_timer(tuned_process: FunctionProcess, finished: Event, shared_info: SharedInfo):
-    shared_info.remove_alive(tuned_process.pid)
+    if shared_info.remove_alive(tuned_process.pid):
+        return
     finished.set()
     tuned_process.sabotage()
     tuned_process.kill()

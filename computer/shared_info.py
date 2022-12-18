@@ -7,6 +7,7 @@ from multiprocessing import Lock
 class SharedInfo:
     def __init__(self):
         self._ready_pids = list()
+        self._used_pids = list()
         self._pids_to_fronts = dict()
         self._lock = Lock()
 
@@ -16,16 +17,11 @@ class SharedInfo:
             if pid in self._pids_to_fronts:
                 self._ready_pids.append(pid)
 
-    # removes a front pid from the ready list - only if it's in the list.
-    def remove_ready(self, pid):
-        with self._lock:
-            if pid in self._ready_pids:
-                self._ready_pids.remove(pid)
-
     # removes a front pid from the ready list and returns the front itself
     def get_ready_front(self):
         with self._lock:
             if len(self._ready_pids) > 0:
+                self._used_pids.append(self._ready_pids[0])
                 return self._pids_to_fronts[self._ready_pids.pop(0)]
 
     # add a new front to pids_to_fronts
@@ -33,12 +29,16 @@ class SharedInfo:
         with self._lock:
             self._pids_to_fronts[pid] = front
 
-    # remove a front from the shared info
+    # remove a front from the shared info, return True if trying to remove a front pid that is used
     def remove_alive(self, pid):
         with self._lock:
             self._pids_to_fronts.pop(pid)
             if pid in self._ready_pids:
                 self._ready_pids.remove(pid)
+                self._used_pids.remove(pid)
+                return False
+            elif pid in self._used_pids:
+                return True
 
     # a property that returns as a list all the alive processes pids
     @property

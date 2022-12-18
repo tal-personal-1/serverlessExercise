@@ -28,7 +28,7 @@ class ProcessMonitor:
     # either an End or the computation result
     def compute(self, loaded_function: LoadedFunction):
         front = self._get_front()
-        answer = self._use_front(front, loaded_function)
+        answer = front.compute(loaded_function)
         if not isinstance(answer, End):
             self._request_counter.request_handled()
         return answer
@@ -41,12 +41,6 @@ class ProcessMonitor:
             front = FrontThread(self._shared_info)
             front.start()
         return front
-
-    # _use_front passes the computation along to a front and return what the front returns.
-    # it removes the front its list of ready to use fronts - defined safely in ShareMemory
-    def _use_front(self, front: FrontThread, loaded_function: LoadedFunction):
-        self._shared_info.remove_ready(front.pid)
-        return front.compute(loaded_function)
 
     # returns a list of alive pids
     @property
